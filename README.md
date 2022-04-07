@@ -7,8 +7,6 @@ The simulator outputs a numerical database that is translated into the model via
 
 This is still a work in progress, and currently I am working on implementing features to make it more of a learning/teaching aid, including introducing impulse response functions.
 
-Thank you for using this program - it'll be constantly updated in the hope of it helping with exam season, as well as being entered into ExploreEcon.
-
-Contact neil.majithia@live.co.uk for any queries, my code isn't really well annotated at the moment so things will be very unclear.
+Contact neil.majithia@live.co.uk for feedback, my code isn't really well annotated right now but I'm working on it
 
 -NM
