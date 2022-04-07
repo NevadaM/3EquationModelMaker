@@ -1,5 +1,6 @@
 # The 3 Equation Model Maker
 Welcome to the 3 Equation Model Maker, by Neil Majithia
+
 The app is hosted here: https://share.streamlit.io/nevadam/3equationmodelmaker/main/Client.py 
 
 The aim of this program is to plot the exact state of the economy at any time period of a simulated shock.
