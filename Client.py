@@ -44,8 +44,13 @@ with st.sidebar.form('Options'):
     
     st.sidebar.write('Reload the page to return default settings')
     
+if 'submitted' not in st.session_state:
+    st.session_state.submitted = False
 
 if submitted:
+    st.session_state.submitted = True
+
+if st.session_state.submitted:
     if tempinput == 'Temporary':
         temporary = True
     else:
@@ -87,7 +92,7 @@ if submitted:
     for i in range(20):
         plist.append(i + 1)
 
-    periodinput = st.select_slider('Choose a period: ', plist)
+    periodinput = st.select_slider('Choose a period: ', options=plist, value=1)
     model.ThreeEquationsPeriod(periodinput)
 
 else:
