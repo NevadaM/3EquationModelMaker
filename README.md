@@ -9,6 +9,6 @@ The simulator outputs a numerical database that is translated into the model via
 
 This is still a work in progress, and currently I am working on implementing features to make it more of a learning/teaching aid, including introducing impulse response functions.
 
-Contact neil.majithia@live.co.uk for feedback, my code isn't really well annotated right now but I'm working on it
+Report issues, suggestions, bugs etc in the issues tab on github, or email me at neil.majithia@live.co.uk 
 
 -NM
