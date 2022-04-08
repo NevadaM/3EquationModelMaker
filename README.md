@@ -5,7 +5,7 @@ The app is hosted here: https://share.streamlit.io/nevadam/3equationmodelmaker/m
 
 The aim of this program is to plot the exact state of the economy at any time period of a simulated shock.
 It's a reconstruction of the Carlin & Soskice macroeconomic simulator (the excel simulator in the folder), built on their work on the 3 equation model.
-The simulator outputs a numerical database that is translated into the model via my modelmaker code. This is all hosted on a streamlit web app
+The simulator outputs a numerical database that is translated into the model via my modelmaker code. This is all hosted on a streamlit web app.
 
 This is still a work in progress, and currently I am working on implementing features to make it more of a learning/teaching aid, including introducing impulse response functions.
 
