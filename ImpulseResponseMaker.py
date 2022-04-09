@@ -42,8 +42,8 @@ class ImpulseResponses():
         )
 
         fig.add_hline(self.ye)
-        fig.show()
-        #st.plotly_chart(fig1)
+        #fig.show()
+        st.plotly_chart(fig)
 
     def Inflation(self):
         fig = go.Figure()
@@ -66,8 +66,8 @@ class ImpulseResponses():
         )
 
         fig.add_hline(self.piT)
-        fig.show()
-        #st.plotly_chart(fig1)
+        #fig.show()
+        st.plotly_chart(fig)
 
     def RealInterestRate(self):
         fig = go.Figure()
@@ -89,8 +89,8 @@ class ImpulseResponses():
         )
 
         fig.add_hline(self.rstar)
-        fig.show()
-        #st.plotly_chart(fig1)
+        #fig.show()
+        st.plotly_chart(fig)
 
     def RealExchangeRate(self):
         fig = go.Figure()
@@ -112,5 +112,5 @@ class ImpulseResponses():
         )
 
         fig.add_hline(self.ebar)
-        fig.show()
-        #st.plotly_chart(fig1)
+        #fig.show()
+        st.plotly_chart(fig)

@@ -11,6 +11,7 @@ import streamlit as st
 
 import Simulator
 import ModelMaker
+import ImpulseResponseMaker
 
 
 ###########################################
@@ -18,7 +19,7 @@ import ModelMaker
 st.title('The Macroeconomic Simulator')
 st.caption('by Neil Majithia')
 st.text('')
-st.text('Version: Alpha 2       neil.majithia@live.co.uk')
+st.text('Version: Alpha 3       neil.majithia@live.co.uk')
 st.write('https://github.com/NevadaM/3EquationModelMaker')
 st.text('')
 st.write('''Welcome to the alpha2 version of the three equation model maker. 
@@ -29,7 +30,7 @@ learning, and aesthetic updates''')
 
 
 with st.sidebar.form('Options'):
-    st.header('Options')
+    st.header('Create your shock')
     submitted = st.form_submit_button('Click here to Simulate')
     tempinput = st.radio('Shock Duration: ', ['Temporary', 'Permanent'])
     sizeinput = st.number_input('Shock Size %: ', min_value=-20, max_value=20, value=0)
@@ -82,18 +83,29 @@ if st.session_state.submitted:
             worldinflationtarget=piTinput, domesticinflationtarget=piTinput, CBbeta=betainput)
         st.success('Complete!')
 
-    st.dataframe(df)
-
-    st.header('Summary')
-    model.ThreeEquationsOverTime()
-
-    st.header('Diagrams in a Specific Period')
+    IRMaker = ImpulseResponseMaker.ImpulseResponses(df, rstar=rstarinput, piT=piTinput)
     plist=[]
     for i in range(20):
         plist.append(i + 1)
 
-    periodinput = st.select_slider('Choose a period: ', options=plist, value=1)
-    model.ThreeEquationsPeriod(periodinput)
+    st.header('Numerical Results')
+    st.dataframe(df)
+
+    st.header('Impulse Response Functions')
+    with st.expander('Expand to see Impulse Response Functions', expanded=False):
+        IRMaker.GDP()
+        IRMaker.Inflation()
+        IRMaker.RealExchangeRate()
+        IRMaker.RealInterestRate()    
+
+    st.header('Three Equations - Key Periods')
+    with st.expander('Expand to see 3 equation diagrams for 4 key periods of the timeline'):
+        model.ThreeEquationsOverTime()
+
+    st.header('Three Equation Diagrams for a Specific Period')
+    with st.expander('Expand to choose a period of the timeline and see what the diagrams look like for it'):
+        periodinput = st.select_slider('Choose a period: ', options=plist, value=1)
+        model.ThreeEquationsPeriod(periodinput)
 
 else:
     st.info('Choose your options in the sidebar and click the button at the top for your output')
