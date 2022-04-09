@@ -4,13 +4,13 @@ import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 
-import Simulator #for example dataframe
+#import Simulator #for example dataframe
 
 ####Take df from simulator, create impulse response funcs using plotly
 #get example df
 
-sim = Simulator.Simulator()
-df = sim.DemandShock(3, temporary=True)
+#sim = Simulator.Simulator()
+#df = sim.DemandShock(3, temporary=True)
 
 class ImpulseResponses():
 
@@ -114,9 +114,3 @@ class ImpulseResponses():
         fig.add_hline(self.ebar)
         fig.show()
         #st.plotly_chart(fig1)
-
-print(df.head(5))
-IRs = ImpulseResponses(df)
-IRs.RealExchangeRate()
-
-
