@@ -1,6 +1,7 @@
 # The 3 Equation Model Maker
 Welcome to the 3 Equation Model Maker, by Neil Majithia
-Version: alpha 3
+
+Version: alpha 3.01
 
 The app is hosted here: https://share.streamlit.io/nevadam/3equationmodelmaker/main/Client.py 
 

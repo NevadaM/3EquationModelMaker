@@ -79,8 +79,8 @@ class Simulator():
             #cb response, finds PC where inflation = equilibrium output
             #then find that pc intersect with MR and that output is optimal bargaining gap
             #piE = df.loc[period - 1]['Inflation']
-            cbresponsey = FindOptimumY(inflation)
-            cbresponser = FindResponse(cbresponsey)
+            cbresponsey = FindOptimumY(inflation, piT=self.piT, alpha=self.alpha)
+            cbresponser = FindResponse(cbresponsey, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             periodseries['Lending real i.r.'] = cbresponser
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
@@ -94,13 +94,13 @@ class Simulator():
             output = cbresponsey
             periodseries['GDP'] = output
             periodseries['Output Gap'] = output - self.ye
-            inflation = InflationfromY(output)
+            inflation = InflationfromY(output, alpha=self.alpha, beta=self.beta, piT=self.piT)
             periodseries['Inflation'] = inflation
             #cb response, finds PC where inflation = equilibrium output
             #then find that pc intersect with MR and that output is optimal bargaining gap
             #piE = df.loc[period - 1]['Inflation']
-            cbresponsey = FindOptimumY(inflation)
-            cbresponser = FindResponse(cbresponsey)
+            cbresponsey = FindOptimumY(inflation, piT=self.piT, alpha=self.alpha)
+            cbresponser = FindResponse(cbresponsey, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             periodseries['Lending real i.r.'] = cbresponser
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
@@ -133,7 +133,7 @@ class Simulator():
                 df.loc[x+1]['Real exchange rate'] = 10 ** qE
                 x+=1
         else:
-            newqbar = NewQBarDemand(size)
+            newqbar = NewQBarDemand(size, a=self.a, b=self.b, rstar=self.rstar, qbar=self.qbar)
             ratesdiffsum = 0
             for x in df['Lending real i.r.'][5:]:
                 x -= self.rstar
@@ -195,11 +195,11 @@ class Simulator():
             #then find that pc intersect with MR and that output is optimal bargaining gap
             #piE = df.loc[period - 1]['Inflation']
             if temporary:
-                cbresponsey = FindOptimumY(inflation)
-                cbresponser = FindResponse(cbresponsey)
+                cbresponsey = FindOptimumY(inflation, piT=self.piT, alpha=self.alpha)
+                cbresponser = FindResponse(cbresponsey, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             else:
-                cbresponsey = FindOptimumY(inflation, ye=self.newye)
-                cbresponser = FindResponse(cbresponsey, ye=self.newye)
+                cbresponsey = FindOptimumY(inflation, ye=self.newye, piT=self.piT, alpha=self.alpha)
+                cbresponser = FindResponse(cbresponsey, ye=self.newye, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             periodseries['Lending real i.r.'] = cbresponser
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
@@ -214,19 +214,19 @@ class Simulator():
             periodseries['GDP'] = output
             periodseries['Output Gap'] = output - self.ye
             if temporary:
-                inflation = InflationfromY(output)
+                inflation = InflationfromY(output, alpha=self.alpha, beta=self.beta, piT=self.piT)
             else:
-                inflation = InflationfromY(output, ye=self.newye)
+                inflation = InflationfromY(output, ye=self.newye, alpha=self.alpha, beta=self.beta, piT=self.piT)
             periodseries['Inflation'] = inflation
             #cb response, finds PC where inflation = equilibrium output
             #then find that pc intersect with MR and that output is optimal bargaining gap
             #piE = df.loc[period - 1]['Inflation']
             if temporary:
-                cbresponsey = FindOptimumY(inflation)
-                cbresponser = FindResponse(cbresponsey)
+                cbresponsey = FindOptimumY(inflation, piT=self.piT, alpha=self.alpha)
+                cbresponser = FindResponse(cbresponsey, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             else:
-                cbresponsey = FindOptimumY(inflation, ye=self.newye)
-                cbresponser = FindResponse(cbresponsey, ye=self.newye)
+                cbresponsey = FindOptimumY(inflation, ye=self.newye, piT=self.piT, alpha=self.alpha)
+                cbresponser = FindResponse(cbresponsey, ye=self.newye, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             periodseries['Lending real i.r.'] = cbresponser
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
@@ -259,7 +259,7 @@ class Simulator():
                 df.loc[x+1]['Real exchange rate'] = 10 ** qE
                 x+=1
         else:
-            newqbar = NewQBarSupply(size)
+            newqbar = NewQBarSupply(size, a=self.a, b=self.b, rstar=self.rstar, qbar=self.qbar)
             ratesdiffsum = 0
             for x in df['Lending real i.r.'][5:]:
                 x -= self.rstar

@@ -22,11 +22,10 @@ st.text('')
 st.text('Version: Alpha 3       neil.majithia@live.co.uk')
 st.write('https://github.com/NevadaM/3EquationModelMaker')
 st.text('')
-st.write('''Welcome to the alpha2 version of the three equation model maker. 
+st.write('''Welcome to the alpha3 version of the three equation model maker. 
 At the current stage, this simulator only models open economies with flexible 
-exchange rates. Planned updates are as follows: Impulse Response Function
-addition, Closed Economy support, more columns in numerical data to simplify 
-learning, and aesthetic updates''')
+exchange rates. Planned updates can be viewed in the github readme. If you have 
+any issues, get in touch on the github issues tab, or via email.''')
 
 
 with st.sidebar.form('Options'):
