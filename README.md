@@ -11,8 +11,11 @@ This is still a work in progress, and currently I am working on implementing fea
 
 Planned Updates:
 * Impulse Response Functions - Alpha3
+* More columns (e.g. nom rates, q, expectations?) - Alpha4
 * Closed Economy - Beta1
 * Aesthetics - Full Release
+
+*One major distinction between my diagrams and source material is the y-axis of the AD-ERU diagram - it's on Q, instead of logQ (q). I don't know whether it's worth changing - this makes more sense in my head, but maybe not for others. If you have an opinion on this, submit it to the issues tab on github or get in touch as below*
 
 Report issues, suggestions, bugs etc in the issues tab on github, or email me at neil.majithia@live.co.uk 
 
