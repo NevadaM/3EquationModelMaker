@@ -49,7 +49,8 @@ class Simulator():
         
         self.qbar = 0
         self.ebar = 1
-        self.cols = ['Periods', 'Output Gap', 'GDP', 'Inflation', 'Lending real i.r.', 'Real exchange rate']
+        self.cols = ['Periods', 'Output Gap', 'GDP', 'Inflation', 'Lending real i.r.', 'Lending nom i.r.', 'Real exchange rate', 
+                    'q']
 
     def DemandShock(self, size, temporary=True):
         self.size = size
@@ -64,7 +65,9 @@ class Simulator():
             periodseries['GDP'] = self.ye
             periodseries['Inflation'] = self.piT
             periodseries['Lending real i.r.'] = self.rstar
+            periodseries['Lending nom i.r.'] = self.rstar - self.piT
             periodseries['Real exchange rate'] = self.ebar
+            periodseries['q'] = self.qbar
 
             df.loc[period] = periodseries
             period += 1
@@ -82,8 +85,10 @@ class Simulator():
             cbresponsey = FindOptimumY(inflation, piT=self.piT, alpha=self.alpha)
             cbresponser = FindResponse(cbresponsey, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             periodseries['Lending real i.r.'] = cbresponser
+            periodseries['Lending nom i.r.'] = cbresponser - inflation
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
+            periodseries['q'] = np.NaN
 
             df.loc[period] = periodseries
             period += 1
@@ -102,8 +107,10 @@ class Simulator():
             cbresponsey = FindOptimumY(inflation, piT=self.piT, alpha=self.alpha)
             cbresponser = FindResponse(cbresponsey, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             periodseries['Lending real i.r.'] = cbresponser
+            periodseries['Lending nom i.r.'] = cbresponser - inflation
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
+            periodseries['q'] = np.NaN
 
             df.loc[period] = periodseries
             period += 1
@@ -125,12 +132,14 @@ class Simulator():
             shockq = 10 ** (ratesdiffsum)
             #print(shockq)
             df.loc[5]['Real exchange rate'] = shockq
+            df.loc[5]['q'] = ratesdiffsum
 
             x = 5
             while x <= self.periods - 1:
                 ratediff = 0.01 * (df.loc[x]['Lending real i.r.'] - self.rstar)
                 qE = self.qbar - ratediff
                 df.loc[x+1]['Real exchange rate'] = 10 ** qE
+                df.loc[x+1]['q'] = qE
                 x+=1
         else:
             newqbar = NewQBarDemand(size, a=self.a, b=self.b, rstar=self.rstar, qbar=self.qbar)
@@ -151,12 +160,14 @@ class Simulator():
             shockq = 10 ** (newqbar + ratesdiffsum)
             #print(shockq)
             df.loc[5]['Real exchange rate'] = shockq
+            df.loc[5]['q'] = (newqbar + ratesdiffsum)
 
             x = 5
             while x <= self.periods - 1:
                 ratediff = 0.01 * (df.loc[x]['Lending real i.r.'] - self.rstar)
                 qE = newqbar - ratediff
                 df.loc[x+1]['Real exchange rate'] = 10 ** qE
+                df.loc[x+1]['q'] = qE
                 x+=1
         
         
@@ -177,7 +188,9 @@ class Simulator():
             periodseries['GDP'] = self.ye
             periodseries['Inflation'] = self.piT
             periodseries['Lending real i.r.'] = self.rstar
+            periodseries['Lending nom i.r.'] = self.rstar - self.piT
             periodseries['Real exchange rate'] = self.ebar
+            periodseries['q'] = self.qbar
 
             df.loc[period] = periodseries
             period += 1
@@ -201,8 +214,10 @@ class Simulator():
                 cbresponsey = FindOptimumY(inflation, ye=self.newye, piT=self.piT, alpha=self.alpha)
                 cbresponser = FindResponse(cbresponsey, ye=self.newye, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             periodseries['Lending real i.r.'] = cbresponser
+            periodseries['Lending nom i.r.'] = cbresponser - inflation
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
+            periodseries['q'] = np.NaN
 
             df.loc[period] = periodseries
             period += 1
@@ -228,8 +243,10 @@ class Simulator():
                 cbresponsey = FindOptimumY(inflation, ye=self.newye, piT=self.piT, alpha=self.alpha)
                 cbresponser = FindResponse(cbresponsey, ye=self.newye, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             periodseries['Lending real i.r.'] = cbresponser
+            periodseries['Lending nom i.r.'] = cbresponser - inflation
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
+            periodseries['q'] = np.NaN
 
             df.loc[period] = periodseries
             period += 1
@@ -251,12 +268,14 @@ class Simulator():
             shockq = 10 ** (ratesdiffsum)
             #print(shockq)
             df.loc[5]['Real exchange rate'] = shockq
+            df.loc[5]['q'] = ratesdiffsum
 
             x = 5
             while x <= self.periods - 1:
                 ratediff = 0.01 * (df.loc[x]['Lending real i.r.'] - self.rstar)
                 qE = self.qbar - ratediff
                 df.loc[x+1]['Real exchange rate'] = 10 ** qE
+                df.loc[x+1]['q'] = qE
                 x+=1
         else:
             newqbar = NewQBarSupply(size, a=self.a, b=self.b, rstar=self.rstar, qbar=self.qbar)
@@ -277,12 +296,14 @@ class Simulator():
             shockq = 10 ** (newqbar + ratesdiffsum)
             #print(shockq)
             df.loc[5]['Real exchange rate'] = shockq
+            df.loc[5]['q'] = newqbar + ratesdiffsum
 
             x = 5
             while x <= self.periods - 1:
                 ratediff = 0.01 * (df.loc[x]['Lending real i.r.'] - self.rstar)
                 qE = newqbar - ratediff
                 df.loc[x+1]['Real exchange rate'] = 10 ** qE
+                df.loc[x+1]['q'] = qE
                 x+=1
         
         return df.round(4)
@@ -290,5 +311,5 @@ class Simulator():
 
 #temp inflation = negative temp supply, so use temp supply for it
 #sim = Simulator()
-#df = sim.SupplyShock(3, temporary=False)
+#df = sim.SupplyShock(-3, temporary=True)
 #print(df)

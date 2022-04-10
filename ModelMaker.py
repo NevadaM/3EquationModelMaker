@@ -44,7 +44,7 @@ class ModelMaker():
                self.A = self.ye + (self.a * self.rstar) - (self.b * self.qbar)
                self.adA = self.ye + (self.a * self.rstar) - (self.adb * self.qbar)
 
-               self.x = np.linspace(95, 105, 11)
+               self.x = np.linspace(95, 105, 22)
 
                self.cols = ['Periods', 'Output Gap', 'GDP', 'Inflation', 'Lending real i.r.', 'Real exchange rate']
 

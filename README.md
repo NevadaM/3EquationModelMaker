@@ -1,7 +1,7 @@
 # The 3 Equation Model Maker
 Welcome to the 3 Equation Model Maker, by Neil Majithia
 
-Version: alpha 3.01
+Version: alpha 3.02
 
 The app is hosted here: https://share.streamlit.io/nevadam/3equationmodelmaker/main/Client.py 
 
@@ -13,7 +13,7 @@ This is still a work in progress, and currently I am working on implementing fea
 
 Planned Updates:
 * ~~Impulse Response Functions - Alpha3~~
-* More columns (e.g. nom rates, q, expectations?) - Alpha4
+* More columns (e.g. ~nom rates, q,~ expectations?) - Alpha4
 * Make diagrams look better / more readable based on feedback - Alpha5
 * Closed Economy - Beta1
 * Aesthetics - Full Release
