@@ -43,6 +43,7 @@ with st.sidebar.form('Options'):
 
     
     st.sidebar.write('Reload the page to return default settings')
+    st.sidebar.write('Special Thanks to Alessandro Guarnieri')
     
 if 'submitted' not in st.session_state:
     st.session_state.submitted = False

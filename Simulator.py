@@ -48,13 +48,15 @@ class Simulator():
         self.t = t
         
         self.qbar = 0
+        self.A = ye + (a * self.rstar) - ((b * 100) * self.qbar)
         self.ebar = 1
         self.cols = ['Periods', 'Output Gap', 'GDP', 'Inflation', 'Lending real i.r.', 'Lending nom i.r.', 'Real exchange rate', 
-                    'q']
+                    'q', 'A']
 
     def DemandShock(self, size, temporary=True):
         self.size = size
         self.multiplier = (0.01 * self.size) + 1
+        self.newA = self.A * self.multiplier
         df = pd.DataFrame(columns=self.cols)
 
         period = 1
@@ -68,6 +70,7 @@ class Simulator():
             periodseries['Lending nom i.r.'] = self.rstar - self.piT
             periodseries['Real exchange rate'] = self.ebar
             periodseries['q'] = self.qbar
+            periodseries['A'] = self.A
 
             df.loc[period] = periodseries
             period += 1
@@ -89,6 +92,7 @@ class Simulator():
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
             periodseries['q'] = np.NaN
+            periodseries['A'] = self.newA
 
             df.loc[period] = periodseries
             period += 1
@@ -111,6 +115,10 @@ class Simulator():
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
             periodseries['q'] = np.NaN
+            if temporary:
+                periodseries['A'] = self.A
+            else:
+                periodseries['A'] = self.newA
 
             df.loc[period] = periodseries
             period += 1
@@ -191,6 +199,7 @@ class Simulator():
             periodseries['Lending nom i.r.'] = self.rstar - self.piT
             periodseries['Real exchange rate'] = self.ebar
             periodseries['q'] = self.qbar
+            periodseries['A'] = self.A
 
             df.loc[period] = periodseries
             period += 1
@@ -218,6 +227,7 @@ class Simulator():
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
             periodseries['q'] = np.NaN
+            periodseries['A'] = self.A
 
             df.loc[period] = periodseries
             period += 1
@@ -247,6 +257,7 @@ class Simulator():
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
             periodseries['q'] = np.NaN
+            periodseries['A'] = self.A
 
             df.loc[period] = periodseries
             period += 1

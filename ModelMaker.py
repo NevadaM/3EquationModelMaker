@@ -32,21 +32,22 @@ class ModelMaker():
                self.CBcredibility = CBcredibility
                self.b = expendituresensitivitytorealer
                self.adb = expendituresensitivitytorealer * 100
+               #self.adb = np.log(expendituresensitivitytorealer)
                self.worldinflationtarget = worldinflationtarget
                self.piT = domesticinflationtarget
                self.beta = CBbeta
                self.t = taxrate
                self.publicexpenditurepct = publicexpenditurepct
                self.publicdebt = publicdebt
-               self.qbar = equilibriumrealer
-               self.ebar = equilibriumnomer
+               self.qbar = 0
+               self.ebar = 1
                self.ye = equilibriumoutput
                self.A = self.ye + (self.a * self.rstar) - (self.b * self.qbar)
                self.adA = self.ye + (self.a * self.rstar) - (self.adb * self.qbar)
 
                self.x = np.linspace(95, 105, 21)
 
-               self.cols = ['Periods', 'Output Gap', 'GDP', 'Inflation', 'Lending real i.r.', 'Real exchange rate']
+               self.cols = ['Periods', 'Output Gap', 'GDP', 'Inflation', 'Lending real i.r.', 'Real exchange rate', 'q', 'A']
 
                if self.supplyshock:
                  self.newye = self.ye * self.multiplier
@@ -100,7 +101,7 @@ class ModelMaker():
       ys.append(yentry)
     rs = [self.rstar]
     for rentry in self.df['Lending real i.r.'][:-1]:
-      rs.append(rentry)
+      rs.append(round(rentry, 2))
 
     if only:
       fig1 = go.Figure(data=[
@@ -179,35 +180,24 @@ class ModelMaker():
     st.plotly_chart(fig1)
 
   def ADCurve(self, period, only=True):
-    #y = A - a r + b q
-    #use last period's r, q, any new A
-    #if self.demandshock == False:
-    #  q = self.qbar
-    #  r = self.rstar
-    #  A = self.A
-
-    #else:
+    #y = A - a rstar + b q
+    #use df A, rstar 
     periodslice = self.df.loc[self.df['Periods'] == period]
+    
     a = self.a
     b = self.adb
-    if period < 5:
-      q = self.qbar
-      r = self.rstar
-      A = self.adA
-    else:
-      lastperiodslice = self.df.loc[self.df['Periods'] == (period-1)]
-      q = lastperiodslice['Real exchange rate'].values[0]
-      r = lastperiodslice['Lending real i.r.'].values[0]
-      A = periodslice['GDP'].values[0] + (a * r) - (b * q)
+    A = periodslice['A'].values[0]
+    r = self.rstar
 
-    q = []
+    qlist = []
     for i in self.x:
-      q.append(round((A - i - (a * r)) / (b * -1), 2))
+      q = (A - i - (a * r)) / (b * -1)
+      qlist.append(round(q, 2))
 
     if only:
       fig1 = go.Figure()
       fig1.add_trace(go.Scatter(
-          x=self.x, y=q, name='AD Curve', mode='lines', line={'color': 'green'}
+          x=self.x, y=qlist, name='AD Curve', mode='lines', line={'color': 'green'}
       ))
       fig1.update_layout(template='plotly_white', title=f'AD Curve - Period: {period}', height=700, width=700, showlegend=True)
       fig1.update_xaxes(title_text='Output y', showline=True, linecolor='black', linewidth=1)
@@ -217,14 +207,14 @@ class ModelMaker():
       #fig1.show()
       st.plotly_chart(fig1)
     else:
-      return q
+      return qlist
 
   def ERPoints(self, only=True):
     ys = []
     for yentry in self.df['GDP']:
       ys.append(yentry)
     qs = []
-    for qentry in self.df['Real exchange rate']:
+    for qentry in self.df['q']:
       qs.append(qentry)
 
     if only:
