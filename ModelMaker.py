@@ -42,7 +42,8 @@ class ModelMaker():
                self.qbar = 0
                self.ebar = 1
                self.ye = equilibriumoutput
-               self.A = self.ye + (self.a * self.rstar) - (self.b * self.qbar)
+
+               self.A = self.df['A'].values[0]
                self.adA = self.ye + (self.a * self.rstar) - (self.adb * self.qbar)
 
                self.x = np.linspace(95, 105, 21)
@@ -73,7 +74,7 @@ class ModelMaker():
       lastperiodslice = self.df.loc[self.df['Periods'] == (period-1)]
       q = lastperiodslice['Real exchange rate'].values[0]
       r = lastperiodslice['Lending real i.r.'].values[0]
-      A = periodslice['GDP'].values[0] + (a * r) - (b * q)
+      A = periodslice['A'].values[0]
 
     r = []
     for i in self.x:
