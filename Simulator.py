@@ -8,24 +8,30 @@ import numpy as np
 
 def FindOptimumY(expectedinflation, ye=100, piT=2, alpha=1, beta=1):
     ###optimum y found using intersect of next period's PC, MR
+    #this is central bank finding its target in response to this period's distance from equilibrium
     y = (((alpha * beta) * (piT - expectedinflation)) / (1 + ((alpha ** 2) * (beta)))) + ye
     return y
 
 def FindResponse(optimumY, ye=100, a=0.75, b=0.1, alpha=1, beta=1, rstar=3):
+    ###optimum r using optimum y
+    #this is central bank finding real interest rate it needs to target to get its target y
     r = (((ye - optimumY) / ((a) + (b / (1 - (1 / (1 + ((alpha ** 2) * beta))))))) + rstar)
     return r
 
 def InflationfromY(y, ye=100, alpha=1, beta=1, piT=2):
+    ###find inflation in economy from bargaining gap 
     pi = ((ye - y) / (alpha * beta)) + piT
     return pi
 
-def NewQBarDemand(shocksize, ye=100, a=0.75, b=0.1, rstar = 3, qbar=0): #shouldn't be 1? confusing/conflicting
+def NewQBarDemand(shocksize, ye=100, a=0.75, b=0.1, rstar = 3, qbar=0): 
+    ###in permanent demand shock calculating new qbar
     multiplier = (0.01 * shocksize) + 1
     oldA = ye + (a * rstar) - ((b * 100) * qbar)
     newqbar = (ye + (a * rstar) - (multiplier * oldA)) / (b * 100)
     return newqbar
 
 def NewQBarSupply(shocksize, ye=100, a=0.75, b=0.1, rstar=3, qbar=0):
+    ###in permanent supply shock, calculating new qbar
     multiplier = (0.01 * shocksize) + 1
     A = ye + (a * rstar) - ((b * 100) * qbar)
     newqbar = ((multiplier * ye) + (a * rstar) - A) / (b * 100)
@@ -74,7 +80,7 @@ class Simulator():
 
             df.loc[period] = periodseries
             period += 1
-        while period < 6:
+        while period < 6: #period 5 only
             #periodseries = pd.Series(dtype=np.float64)
             periodseries['Periods'] = period
             #temporary demand shock
@@ -82,10 +88,11 @@ class Simulator():
             periodseries['Output Gap'] = self.size
             inflation = self.piT + self.size
             periodseries['Inflation'] = inflation
-            #cb response, finds PC where inflation = equilibrium output
+            #cb response, finds PC where inflation = equilibrium output (this is next period's PC)
             #then find that pc intersect with MR and that output is optimal bargaining gap
-            #piE = df.loc[period - 1]['Inflation']
-            cbresponsey = FindOptimumY(inflation, piT=self.piT, alpha=self.alpha)
+            #it uses next period's PC, so the expected inflation it uses is this period's inflation
+            #this will be useless for non-adaptive expectations - needs rewrite
+            cbresponsey = FindOptimumY(expectedinflation=inflation, piT=self.piT, alpha=self.alpha)
             cbresponser = FindResponse(cbresponsey, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             periodseries['Lending real i.r.'] = cbresponser
             periodseries['Lending nom i.r.'] = cbresponser - inflation
@@ -97,7 +104,7 @@ class Simulator():
             df.loc[period] = periodseries
             period += 1
         
-        while period <= self.periods:
+        while period <= self.periods: #all post shock periods
             periodseries['Periods'] = period
             #beginning of recovery
             output = cbresponsey
@@ -107,8 +114,8 @@ class Simulator():
             periodseries['Inflation'] = inflation
             #cb response, finds PC where inflation = equilibrium output
             #then find that pc intersect with MR and that output is optimal bargaining gap
-            #piE = df.loc[period - 1]['Inflation']
-            cbresponsey = FindOptimumY(inflation, piT=self.piT, alpha=self.alpha)
+            #again, expected inflation used for next period is this period's inflation
+            cbresponsey = FindOptimumY(expectedinflation=inflation, piT=self.piT, alpha=self.alpha)
             cbresponser = FindResponse(cbresponsey, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             periodseries['Lending real i.r.'] = cbresponser
             periodseries['Lending nom i.r.'] = cbresponser - inflation
@@ -217,7 +224,7 @@ class Simulator():
             #then find that pc intersect with MR and that output is optimal bargaining gap
             #piE = df.loc[period - 1]['Inflation']
             if temporary:
-                cbresponsey = FindOptimumY(inflation, piT=self.piT, alpha=self.alpha)
+                cbresponsey = FindOptimumY(expectedinflation=inflation, piT=self.piT, alpha=self.alpha)
                 cbresponser = FindResponse(cbresponsey, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             else:
                 cbresponsey = FindOptimumY(inflation, ye=self.newye, piT=self.piT, alpha=self.alpha)
