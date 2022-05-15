@@ -285,28 +285,16 @@ class ModelMaker():
       return pi, newpi
 
   def PhillipsCurve(self, period, only=True):
-    if period == 1:
-      piE = self.piT
-    else:
-      lastperiodslice = self.df.loc[self.df['Periods'] == (period-1)]
-      piE = lastperiodslice['Inflation'].values[0]
+    periodslice = self.df.loc[self.df['Periods'] == period]
+    piE = periodslice['Expected Inflation'].values[0]
 
     pi = []
-    if not self.supplyshock and not self.inflationshock or period < 5:
-      for i in self.x:
-        pi.append(round((piE + (self.alpha * (i - self.ye))), 2))
-      #print('not working 1 ')
-    elif self.inflationshock:
-      for i in self.x:
-        if period == 5:
-          pi.append(round((piE + (self.alpha * (i - self.ye + self.shocksize))), 2))
-        else:
-          pi.append(round((piE + (self.alpha * (i - self.ye))), 2))
-      #print('works')
-    else:
+    if self.supplyshock and not self.temporary and not period <= 5:
       for i in self.x:
         pi.append(round((piE + (self.alpha * (i - self.newye))), 2))
-      #print('not working 2')
+    else:
+      for i in self.x:
+        pi.append(round((piE + (self.alpha * (i - self.ye))), 2))
 
     if only:
       fig1 = go.Figure()
