@@ -19,7 +19,7 @@ import ImpulseResponseMaker
 st.title('The Macroeconomic Simulator')
 st.caption('by Neil Majithia')
 st.text('')
-st.text('Version: Alpha 5.0       neil.majithia@live.co.uk')
+st.text('Version: Alpha 5.5       neil.majithia@live.co.uk')
 st.write('https://github.com/NevadaM/3EquationModelMaker')
 st.text('')
 st.write('''Welcome to the alpha3 version of the three equation model maker. 

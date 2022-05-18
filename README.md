@@ -2,27 +2,27 @@
 Welcome to the 3 Equation Model Maker, by Neil Majithia
 The app is hosted here: https://share.streamlit.io/nevadam/3equationmodelmaker/main/Client.py 
 
-## Version: **Alpha 5.0**
+## Version: **Alpha 5.5**
 
 ### Changelog: 
 
 #### Additions:
-* Implemented Central Bank Credibility option
-* Included Expected Inflation column
+* Finally implemented proper POIs of the model
+
+I still don't like their implementation, but Plotly is being annoying and it might take a complete rework of my drawing functions to get it to do POIs the way I'd like them to be. Might need some more research because the only way I can think of getting that rework to work would increase processing by a sizeable amount for some reason.
 
 #### Updates / Bug Fixes:
-* Fixed PC simulation in supply-side shocks
+* Fixed Legend duplicates
 
-The old simulation ended up with a moving PC in period 5 despite expected inflation not changing, and had some other errors in supply side shocks.
-* Cleaned PC curve drawer
+The duplicates in the Legend were bugging me and making it borderline unreadable. This is better but the whole POI stuff is still unclear. The code for it is also kinda stupid.
 
-The function for drawing the PC curves was bloated with loads of unnecessary conditions. When first writing it I probably did it to make it easier to visualise what I was doing, but I think it actually led to a lot of the errors in simulation and made the processing of the simulation take way longer
-* Cleared some ambiguity in simulator functions
+* Changed x axis range
 
-Specifically with CB responses in the simulator, it was often unclear why certain inputs were being used. Now, it's a little easier to follow - I want the code to be a decent learning aid too (idea is to think about actor behaviour as some sort of algorithm) and to do that it needs way less ambiguity
-* Misc Bug Fixes
+I've made the x axis range adaptive to the shock sizes themselves. It's still a hard coded ratio which could get annoying later, but that's a future problem I guess. 
 
-Some other boring bugs that I found, or botched bits of code, have been rewritten.
+* Misc cleaning
+
+I've been able to speed this all up by changing some conditions around. Would love to clean out some more but I think some of the stuff will be useful for later iterations, like public expenditure stuff. Shame I know nothing about that stuff huh.
 
 ## Description
 The aim of this program is to plot the exact state of the macroeconomy at any time period in a simulated shock.
