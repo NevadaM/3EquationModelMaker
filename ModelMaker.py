@@ -42,8 +42,9 @@ class ModelMaker():
                self.qbar = 0
                self.ebar = 1
                self.ye = equilibriumoutput
+               self.A = self.df['A'].values[0]
+               self.adA = self.ye + (self.a * self.rstar) - (self.adb * self.qbar)
 
-<<<<<<< HEAD
                if self.shocksize > 0:
                  #self.x = np.arange(self.ye - (0.5 * self.shocksize), self.df.iloc[5]['GDP'] + 1.5, 1)
                  self.x = np.arange(self.ye - (0.75 * self.shocksize), self.df['GDP'].values.max() + 1.5, 0.25)
@@ -51,16 +52,8 @@ class ModelMaker():
                elif self.shocksize < 0: 
                  #self.x = np.arange(self.df.iloc[5]['GDP'] - 1.5, self.ye - (0.5 * self.shocksize), 1)
                  self.x = np.arange(self.df['GDP'].values.min() - 1.5, self.ye - (0.75 * self.shocksize), 25)
-=======
-               self.A = self.df['A'].values[0]
-               self.adA = self.ye + (self.a * self.rstar) - (self.adb * self.qbar)
                
-               if self.shocksize > 0:
-                 self.x = np.arange(self.ye - (0.5 * (self.shocksize)), self.df.iloc[5]['GDP'] + 1.5, 1)
-               elif self.shocksize < 0: 
-                 self.x = np.arange(self.df.iloc[5]['GDP'] - 1.5, self.ye - (0.5 * (self.shocksize), 1))
 
->>>>>>> b66fdc6c6c77f95657945b3bb31a42639657c77c
 
                self.cols = ['Periods', 'Output Gap', 'GDP', 'Inflation', 'Lending real i.r.', 'Real exchange rate', 'q', 'A']
 
