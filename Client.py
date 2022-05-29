@@ -19,13 +19,13 @@ import ImpulseResponseMaker
 st.title('The Macroeconomic Simulator')
 st.caption('by Neil Majithia')
 st.text('')
-st.text('Version: Alpha 3       neil.majithia@live.co.uk')
+st.text('Version: Alpha 5.5       neil.majithia@live.co.uk')
 st.write('https://github.com/NevadaM/3EquationModelMaker')
 st.text('')
 st.write('''Welcome to the alpha3 version of the three equation model maker. 
 At the current stage, this simulator only models open economies with flexible 
 exchange rates. Planned updates can be viewed in the github readme. If you have 
-any issues, get in touch on the github issues tab, or via email.''')
+any issues, get in touch on the github issues tab, or via the email address above.''')
 
 
 with st.sidebar.form('Options'):
@@ -34,6 +34,7 @@ with st.sidebar.form('Options'):
     tempinput = st.radio('Shock Duration: ', ['Temporary', 'Permanent'])
     sizeinput = st.number_input('Shock Size %: ', min_value=-20, max_value=20, value=0)
     typeinput = st.radio('Shock Type: ', ['Supply', 'Demand', 'Inflationary'])
+    credinput = st.number_input('Credibility of Central Bank', min_value=0.0, max_value=1.0, value=0.0, step=0.1)
     rstarinput = st.number_input('World Real Interest Rate (r*) %: ', min_value=0.0, value=3.0)
     piTinput = st.number_input('Target Inflation Rate (piT): ', min_value=0.0, value=2.0, step=0.1)
     alphainput = st.number_input('Inflation Sensitivity to Output Gap (alpha): ', min_value=0.0, value=1.0, step=0.01)
@@ -59,7 +60,7 @@ if st.session_state.submitted:
 
     with st.spinner('Simulating and Modelling...'):
         sleep(2)
-        sim = Simulator.Simulator(rstar=rstarinput, alpha=alphainput, beta=betainput, a=ainput, b=binput, piT=piTinput)
+        sim = Simulator.Simulator(rstar=rstarinput, alpha=alphainput, beta=betainput, a=ainput, b=binput, piT=piTinput, credibility=credinput)
         if typeinput == 'Supply':
             df = sim.SupplyShock(size= (sizeinput), temporary=temporary)
             model = ModelMaker.ModelMaker(df, shocksizepct= (sizeinput), temporary=temporary, demandshock=False, supplyshock=True, 

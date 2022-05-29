@@ -42,9 +42,8 @@ class ModelMaker():
                self.qbar = 0
                self.ebar = 1
                self.ye = equilibriumoutput
-               self.A = self.ye + (self.a * self.rstar) - (self.b * self.qbar)
-               self.adA = self.ye + (self.a * self.rstar) - (self.adb * self.qbar)
 
+<<<<<<< HEAD
                if self.shocksize > 0:
                  #self.x = np.arange(self.ye - (0.5 * self.shocksize), self.df.iloc[5]['GDP'] + 1.5, 1)
                  self.x = np.arange(self.ye - (0.75 * self.shocksize), self.df['GDP'].values.max() + 1.5, 0.25)
@@ -52,12 +51,38 @@ class ModelMaker():
                elif self.shocksize < 0: 
                  #self.x = np.arange(self.df.iloc[5]['GDP'] - 1.5, self.ye - (0.5 * self.shocksize), 1)
                  self.x = np.arange(self.df['GDP'].values.min() - 1.5, self.ye - (0.75 * self.shocksize), 25)
+=======
+               self.A = self.df['A'].values[0]
+               self.adA = self.ye + (self.a * self.rstar) - (self.adb * self.qbar)
+               
+               if self.shocksize > 0:
+                 self.x = np.arange(self.ye - (0.5 * (self.shocksize)), self.df.iloc[5]['GDP'] + 1.5, 1)
+               elif self.shocksize < 0: 
+                 self.x = np.arange(self.df.iloc[5]['GDP'] - 1.5, self.ye - (0.5 * (self.shocksize), 1))
+
+>>>>>>> b66fdc6c6c77f95657945b3bb31a42639657c77c
 
                self.cols = ['Periods', 'Output Gap', 'GDP', 'Inflation', 'Lending real i.r.', 'Real exchange rate', 'q', 'A']
 
                if self.supplyshock:
                  self.newye = self.ye * self.multiplier
 
+  def Modelpoints(self):
+    #this is finding the POIs from the actual model and outputting them for drawing
+    #A and Z represent initial and final equilibriums so p1, p25
+    #B represents the shock - it uses the period 5 data point because that isn't actually affected by period 5 rates
+    #C represents where the central bank aims to move the economy post shock (the optimals in the sim, period 6 values)
+    #using i-1 as the indexer to make the periods we're using clearer
+
+    ys = [self.df.iloc[(i-1)]['GDP'] for i in [1, 5, 6, 25]]
+    rs = [self.df.iloc[(i-1)]['Lending real i.r.'] for i in [1, 4, 5, 24]] # these need to be time bumped by one I think !!!!
+    qs = [self.df.iloc[(i-1)]['q'] for i in [1, 5, 6, 25]] # I would think these would be time bumped too but i guess not? need to check
+    pis = [self.df.iloc[(i-1)]['Inflation'] for i in [1, 5, 6, 25]]
+
+    #I'm not gonna bother with the 'only' stuff I did for other plots - I think it would make debugging even less clear. Just gonna
+    #add to the graph drawing functions and pray it works
+    #the most likely bugs are time lags, which are pretty easy to fix in the code above so hope it all works lmao    
+    return ys, rs, qs, pis
 
   def ISCurve(self, period, only=True):
     #y = A - a r + b q
@@ -79,7 +104,7 @@ class ModelMaker():
       lastperiodslice = self.df.loc[self.df['Periods'] == (period-1)]
       q = lastperiodslice['Real exchange rate'].values[0]
       r = lastperiodslice['Lending real i.r.'].values[0]
-      A = periodslice['GDP'].values[0] + (a * r) - (b * q)
+      A = periodslice['A'].values[0]
 
     r = []
     for i in self.x:
@@ -101,7 +126,7 @@ class ModelMaker():
       return r
 
   def RXResponses(self, only=True):
-    #this is making rx from visible central bank actions
+    #this is making rx from visible central bank actions, which I guess was how we were taught at first to derive it
     ys = []
     for yentry in self.df['GDP']:
       ys.append(yentry)
@@ -290,28 +315,16 @@ class ModelMaker():
       return pi, newpi
 
   def PhillipsCurve(self, period, only=True):
-    if period == 1:
-      piE = self.piT
-    else:
-      lastperiodslice = self.df.loc[self.df['Periods'] == (period-1)]
-      piE = lastperiodslice['Inflation'].values[0]
+    periodslice = self.df.loc[self.df['Periods'] == period]
+    piE = periodslice['Expected Inflation'].values[0]
 
     pi = []
-    if not self.supplyshock and not self.inflationshock or period < 5:
-      for i in self.x:
-        pi.append(round((piE + (self.alpha * (i - self.ye))), 2))
-      #print('not working 1 ')
-    elif self.inflationshock:
-      for i in self.x:
-        if period == 5:
-          pi.append(round((piE + (self.alpha * (i - self.ye + self.shocksize))), 2))
-        else:
-          pi.append(round((piE + (self.alpha * (i - self.ye))), 2))
-      #print('works')
-    else:
+    if self.supplyshock and not self.temporary and not period <= 5:
       for i in self.x:
         pi.append(round((piE + (self.alpha * (i - self.newye))), 2))
-      #print('not working 2')
+    else:
+      for i in self.x:
+        pi.append(round((piE + (self.alpha * (i - self.ye))), 2))
 
     if only:
       fig1 = go.Figure()
@@ -384,13 +397,15 @@ class ModelMaker():
 
   def ThreeEquationsPeriod(self, period):
     IS = self.ISCurve(period, only=False)
-    RXys, RXrs = self.RXResponses(only=False)
+    #RXys, RXrs = self.RXResponses(only=False)
     RXCurvers, NewRXCurvers = self.RXCurve(only=False)
     AD = self.ADCurve(period, only=False)
-    ERys, ERqs = self.ERPoints(only=False)
+    #ERys, ERqs = self.ERPoints(only=False)
     PC = self.PhillipsCurve(period, only=False)
-    PCpointys, PCpointpis = self.PhillipsCurvePoints(only=False)
+    #PCpointys, PCpointpis = self.PhillipsCurvePoints(only=False)
     MR, NewMR = self.MRCurve(only=False)
+    ys, RXrs, ERqs, PCpointpis = self.Modelpoints()
+
 
     fig1 = make_subplots(rows=3, cols=1, vertical_spacing=0.05, shared_xaxes=True,
                          subplot_titles=['IS-RX Diagram', 'AD-ERU Diagram', 'MR-PC Curve'])
@@ -401,14 +416,14 @@ class ModelMaker():
     fig1.add_trace(go.Scatter(
           x=self.x, y=RXCurvers, name='RX Curve', mode='lines', line={'color': 'red'}
       ), row=1, col=1)
-    fig1.add_trace(go.Scatter(x=RXys, y=RXrs, name='POIs', mode='markers',
-                                 marker={'color': '#000000', 'size': 7, 'symbol': 'square'}
+    fig1.add_trace(go.Scatter(x=ys, y=RXrs, name='POIs', mode='markers', hovertext=['Point A', 'Point B', 'Point C', 'Point Z'], 
+                                 marker={'color': '#000000', 'size': 7, 'symbol': ['square', 'hexagon', 'triangle-up', 'square']}
       ), row=1, col=1)
     fig1.add_trace(go.Scatter(
           x=self.x, y=AD, name='AD Curve', mode='lines', line={'color': 'green'}
       ), row=2, col=1)
-    fig1.add_trace(go.Scatter(x=ERys, y=ERqs, name='POIs', mode='markers',
-                                 marker={'color': '#000000', 'size': 7, 'symbol': 'hexagon'}
+    fig1.add_trace(go.Scatter(x=ys, y=ERqs, name='POIs', mode='markers', hovertext=['Point A', 'Point B', 'Point C', 'Point Z'], showlegend=False, 
+                                 marker={'color': '#000000', 'size': 7, 'symbol': ['square', 'hexagon', 'triangle-up', 'square']}
       ), row=2, col=1)
     fig1.add_trace(go.Scatter(
           x=self.x, y=PC, name='Phillips Curve', mode='lines', line={'color': 'purple'}
@@ -416,8 +431,8 @@ class ModelMaker():
     fig1.add_trace(go.Scatter(
           x=self.x, y=MR, name='MR Curve', mode='lines', line={'color': 'orange'}
       ), row=3, col=1)
-    fig1.add_trace(go.Scatter(x=PCpointys, y=PCpointpis, name='POIs', mode='markers',
-                               marker={'color': '#000000', 'size': 7, 'symbol': 'triangle-up'}
+    fig1.add_trace(go.Scatter(x=ys, y=PCpointpis, name='POIs', mode='markers', hovertext=['Point A', 'Point B', 'Point C', 'Point Z'], showlegend=False, 
+                               marker={'color': '#000000', 'size': 7, 'symbol': ['square', 'hexagon', 'triangle-up', 'square']}
       ), row=3, col=1)
 
     if self.supplyshock and not self.temporary and period >= 5:
@@ -450,20 +465,24 @@ class ModelMaker():
                          row_titles=['IS-RX Diagram', 'AD-ERU Diagram', 'MR-PC Curve'],
                          column_titles=['Period1 / Point A', 'Period5 / Shock', 'Period6 / Recovery', 'Period25 / Point Z'])
 
-    RXys, RXrs = self.RXResponses(only=False)
+    #RXys, RXrs = self.RXResponses(only=False)
     RXCurvers, NewRXCurvers = self.RXCurve(only=False)
-    ERys, ERqs = self.ERPoints(only=False)
-    PCpointys, PCpointpis = self.PhillipsCurvePoints(only=False)
+    #ERys, ERqs = self.ERPoints(only=False)
+    #PCpointys, PCpointpis = self.PhillipsCurvePoints(only=False)
     MR, NewMR = self.MRCurve(only=False)
+    ys, RXrs, ERqs, PCpointpis = self.Modelpoints()
 
-    fig1.add_trace(go.Scatter(x=RXys, y=RXrs, name='POIs', mode='markers',
-                                 marker={'color': '#000000', 'size': 7, 'symbol': 'square'}
+    fig1.add_trace(go.Scatter(x=ys, y=RXrs, name='POIs', mode='markers', hovertext=['Point A', 'Point B', 'Point C', 'Point Z'], 
+                                 marker={'color': '#000000', 'size': 7, 'symbol': ['square', 'hexagon', 'triangle-up', 'square']}
+      ), row=1, col=1)
+    fig1.add_trace(go.Scatter(x=ys, y=RXrs, name='POIs', mode='markers', hovertext=['Point A', 'Point B', 'Point C', 'Point Z'], 
+                                 marker={'color': '#000000', 'size': 7, 'symbol': ['square', 'hexagon', 'triangle-up', 'square']}, showlegend=False
       ), row=1, col='all')
-    fig1.add_trace(go.Scatter(x=ERys, y=ERqs, name='POIs', mode='markers',
-                                 marker={'color': '#000000', 'size': 7, 'symbol': 'hexagon'}
+    fig1.add_trace(go.Scatter(x=ys, y=ERqs, name='POIs', mode='markers', hovertext=['Point A', 'Point B', 'Point C', 'Point Z'], 
+                                 marker={'color': '#000000', 'size': 7, 'symbol': ['square', 'hexagon', 'triangle-up', 'square']}, showlegend=False
       ), row=2, col='all')
-    fig1.add_trace(go.Scatter(x=PCpointys, y=PCpointpis, name='POIs', mode='markers',
-                               marker={'color': '#000000', 'size': 7, 'symbol': 'triangle-up'}
+    fig1.add_trace(go.Scatter(x=ys, y=PCpointpis, name='POIs', mode='markers', hovertext=['Point A', 'Point B', 'Point C', 'Point Z'], 
+                               marker={'color': '#000000', 'size': 7, 'symbol': ['square', 'hexagon', 'triangle-up', 'square']}, showlegend=False
       ), row=3, col='all')
 
     periods = [1, 5, 6, 25]
@@ -471,32 +490,33 @@ class ModelMaker():
       IS = self.ISCurve(period, only=False)
       AD = self.ADCurve(period, only=False)
       PC = self.PhillipsCurve(period, only=False)
+      onlegend = False if period !=5 else True
 
       column = periods.index(period) + 1
 
       fig1.add_trace(go.Scatter(
-          x=self.x, y=IS, name='IS Curve', mode='lines', line={'color': 'blue'}
+          x=self.x, y=IS, name='IS Curve', mode='lines', line={'color': 'blue'}, showlegend=onlegend 
       ), row=1, col=column)
       fig1.add_trace(go.Scatter(
-          x=self.x, y=RXCurvers, name='RX Curve', mode='lines', line={'color': 'red'}
+          x=self.x, y=RXCurvers, name='RX Curve', mode='lines', line={'color': 'red'}, showlegend=onlegend
       ), row=1, col=column)
       fig1.add_trace(go.Scatter(
-          x=self.x, y=AD, name='AD Curve', mode='lines', line={'color': 'green'}
+          x=self.x, y=AD, name='AD Curve', mode='lines', line={'color': 'green'}, showlegend=onlegend
       ), row=2, col=column)
 
       fig1.add_trace(go.Scatter(
-          x=self.x, y=PC, name='Phillips Curve', mode='lines', line={'color': 'purple'}
+          x=self.x, y=PC, name='Phillips Curve', mode='lines', line={'color': 'purple'}, showlegend=onlegend
       ), row=3, col=column)
       fig1.add_trace(go.Scatter(
-          x=self.x, y=MR, name='MR Curve', mode='lines', line={'color': 'orange'}
+          x=self.x, y=MR, name='MR Curve', mode='lines', line={'color': 'orange'}, showlegend=onlegend
       ), row=3, col=column)
 
       if self.supplyshock and not self.temporary and period >= 5:
         fig1.add_trace(go.Scatter(
-          x=self.x, y=NewRXCurvers, name='New RX Curve', mode='lines', line={'color': 'maroon'}
+          x=self.x, y=NewRXCurvers, name='New RX Curve', mode='lines', line={'color': 'maroon'}, showlegend=onlegend
           ), row=1, col=column)
         fig1.add_trace(go.Scatter(
-          x=self.x, y=NewMR, name='New MR Curve', mode='lines', line={'color': 'tan'}
+          x=self.x, y=NewMR, name='New MR Curve', mode='lines', line={'color': 'tan'}, showlegend=onlegend
           ), row=3, col=column)
         fig1.add_vline(self.newye, row=2, col=column, line={'color': 'darkviolet'})
 
