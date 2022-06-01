@@ -47,9 +47,12 @@ class ModelMaker():
                self.adA = self.ye + (self.a * self.rstar) - (self.adb * self.qbar)
                
                if self.shocksize > 0:
-                 self.x = np.arange(self.ye - (0.5 * (self.shocksize)), self.df.iloc[5]['GDP'] + 1.5, 1)
+                 #self.x = np.arange(self.ye - (0.5 * self.shocksize), self.df.iloc[5]['GDP'] + 1.5, 1)
+                 self.x = np.arange(self.ye - (0.75 * self.shocksize), self.df['GDP'].values.max() + 1.5, 0.25)
+
                elif self.shocksize < 0: 
-                 self.x = np.arange(self.df.iloc[5]['GDP'] - 1.5, self.ye - (0.5 * (self.shocksize), 1))
+                 #self.x = np.arange(self.df.iloc[5]['GDP'] - 1.5, self.ye - (0.5 * self.shocksize), 1)
+                 self.x = np.arange(self.df['GDP'].values.min() - 1.5, self.ye - (0.75 * self.shocksize), 25)
 
 
                self.cols = ['Periods', 'Output Gap', 'GDP', 'Inflation', 'Lending real i.r.', 'Real exchange rate', 'q', 'A']
