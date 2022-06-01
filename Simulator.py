@@ -43,7 +43,7 @@ def NewQBarSupply(shocksize, ye=100, a=0.75, b=0.1, rstar=3, qbar=0):
 
 class Simulator():
     def __init__(self, periods=25, ye=100, rstar=3, alpha=1, beta=1, 
-                a=0.75, b=0.1, piT=2, t=0.2, credibility=0):
+                a=0.75, b=0.1, piT=2, credibility=0):
         
         self.periods = periods
         self.ye = ye
@@ -53,7 +53,6 @@ class Simulator():
         self.a = a
         self.b = b
         self.piT = piT
-        self.t = t
         self.credibility = credibility
         self.anticredibility = 1 - credibility
         
@@ -78,7 +77,7 @@ class Simulator():
             periodseries['Inflation'] = self.piT
             periodseries['Expected Inflation'] = self.piT ####up to p5, piE = piT
             periodseries['Lending real i.r.'] = self.rstar
-            periodseries['Lending nom i.r.'] = self.rstar - self.piT
+            periodseries['Lending nom i.r.'] = self.rstar + self.piT
             periodseries['Real exchange rate'] = self.ebar
             periodseries['q'] = self.qbar
             periodseries['A'] = self.A
@@ -101,7 +100,7 @@ class Simulator():
             cbresponsey = FindOptimumY(expectedinflation=inflation, piT=self.piT, alpha=self.alpha)
             cbresponser = FindResponse(cbresponsey, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             periodseries['Lending real i.r.'] = cbresponser
-            periodseries['Lending nom i.r.'] = cbresponser - inflation
+            periodseries['Lending nom i.r.'] = cbresponser + inflation
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
             periodseries['q'] = np.NaN
@@ -126,7 +125,7 @@ class Simulator():
             cbresponsey = FindOptimumY(expectedinflation=(self.credibility * self.piT) + (self.anticredibility * inflation), piT=self.piT, alpha=self.alpha)
             cbresponser = FindResponse(cbresponsey, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             periodseries['Lending real i.r.'] = cbresponser
-            periodseries['Lending nom i.r.'] = cbresponser - inflation
+            periodseries['Lending nom i.r.'] = cbresponser + inflation
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
             periodseries['q'] = np.NaN
@@ -212,7 +211,7 @@ class Simulator():
             periodseries['Inflation'] = self.piT
             periodseries['Expected Inflation'] = self.piT ####up to p5, piE = piT
             periodseries['Lending real i.r.'] = self.rstar
-            periodseries['Lending nom i.r.'] = self.rstar - self.piT
+            periodseries['Lending nom i.r.'] = self.rstar + self.piT
             periodseries['Real exchange rate'] = self.ebar
             periodseries['q'] = self.qbar
             periodseries['A'] = self.A
@@ -240,7 +239,7 @@ class Simulator():
                 cbresponsey = FindOptimumY(expectedinflation=(self.credibility * self.piT) + (self.anticredibility * inflation), ye=self.newye, piT=self.piT, alpha=self.alpha)
                 cbresponser = FindResponse(cbresponsey, ye=self.newye, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             periodseries['Lending real i.r.'] = cbresponser
-            periodseries['Lending nom i.r.'] = cbresponser - inflation
+            periodseries['Lending nom i.r.'] = cbresponser + inflation
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
             periodseries['q'] = np.NaN
@@ -254,7 +253,7 @@ class Simulator():
             #beginning of recovery
             output = cbresponsey
             periodseries['GDP'] = output
-            periodseries['Output Gap'] = output - self.ye
+            periodseries['Output Gap'] = output - (self.ye if temporary else self.newye)
             periodseries['Expected Inflation'] = (self.credibility * self.piT) + (self.anticredibility * inflation)
             if temporary:
                 inflation = InflationfromY(output, alpha=self.alpha, beta=self.beta, piT=self.piT)
@@ -271,7 +270,7 @@ class Simulator():
                 cbresponsey = FindOptimumY(expectedinflation=(self.credibility * self.piT) + (self.anticredibility * inflation), ye=self.newye, piT=self.piT, alpha=self.alpha)
                 cbresponser = FindResponse(cbresponsey, ye=self.newye, a=self.a, b=self.b, alpha=self.alpha, beta=self.beta, rstar=self.rstar)
             periodseries['Lending real i.r.'] = cbresponser
-            periodseries['Lending nom i.r.'] = cbresponser - inflation
+            periodseries['Lending nom i.r.'] = cbresponser + inflation
             #newq = FindQ(cbresponser)
             periodseries['Real exchange rate'] = np.NaN
             periodseries['q'] = np.NaN

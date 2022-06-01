@@ -2,27 +2,35 @@
 Welcome to the 3 Equation Model Maker, by Neil Majithia
 The app is hosted here: https://share.streamlit.io/nevadam/3equationmodelmaker/main/Client.py 
 
-## Version: **Alpha 5.5**
+## Version: **Beta 1**
 
 ### Changelog: 
 
 #### Additions:
-* Finally implemented proper POIs of the model
+* CLOSED ECONOMY SIMULATION !
 
-I still don't like their implementation, but Plotly is being annoying and it might take a complete rework of my drawing functions to get it to do POIs the way I'd like them to be. Might need some more research because the only way I can think of getting that rework to work would increase processing by a sizeable amount for some reason.
+Finally implemented a closed economy simulator and a corresponding closed economy modeller. These take same structure and commands as their open economy counterparts so hopefully seamless implementation.
 
 #### Updates / Bug Fixes:
-* Fixed Legend duplicates
+* Fixed output gap weirdness for permanent supply shocks
 
-The duplicates in the Legend were bugging me and making it borderline unreadable. This is better but the whole POI stuff is still unclear. The code for it is also kinda stupid.
+Output gap was in comparison to the old equilibrium, which gave stupid numbers
 
-* Changed x axis range
+* Fixed nom rate calculation
 
-I've made the x axis range adaptive to the shock sizes themselves. It's still a hard coded ratio which could get annoying later, but that's a future problem I guess. 
+Was using the fisher equation in the wrong way, so nom rates weren't even close to correct. Will at some point need to address the zero lower bound.
+
+* Fixed plotting issues for negative shocks
+
+Probably the most stupid typo i've ever done, works fine now
+
+* Fixed weird wavy AD curve
+
+Early rounding in the function, I kept the rounding but only to 4 places, gives enough precision for a straight line
 
 * Misc cleaning
 
-I've been able to speed this all up by changing some conditions around. Would love to clean out some more but I think some of the stuff will be useful for later iterations, like public expenditure stuff. Shame I know nothing about that stuff huh.
+Got rid of some unused parameters. Marginal improvement on memory use. I think I should target processing more - some conditions especially within the client could be cleaned. Working on the django site gives me a good chance to do it, esp with the use of requests. 
 
 ## Description
 The aim of this program is to plot the exact state of the macroeconomy at any time period in a simulated shock.
@@ -36,8 +44,8 @@ Planned Updates to Streamlit site:
 * ~~Impulse Response Functions - Alpha3~~
 * ~~More columns (e.g. nom rates, q, expectations?) - Alpha4~~
 * ~~Inclusion of anchored expectations and Central Bank Credibility - Alpha5~~
-* Introduce POIs of the model (points A, B, C) - Alpha6
-* Closed Economy - Beta1
+* ~~ Introduce POIs of the model (points A, B, C) - Alpha6 ~~
+* ~~ Closed Economy - Beta1 ~~
 
 After beta release work will be put into migration to a new web app based on Django/React/Something else.
 

@@ -9,9 +9,10 @@ from plotly.subplots import make_subplots
 from re import template
 import streamlit as st
 
-class ModelMaker():
+class OEModelMaker():
   ###take data, parameters as input and return full model simulation
-  ###want output to be a list of subplots, indexed by period, showing the line in each period
+  ###want output to be a list of subplots, indexed by period, showing the line in each period but that's a lot of memory
+  #website will instead request a period specific subplot and server backend (or for streamlit, server frontend) runs code
 
   def __init__(self, df, shocksizepct=3, temporary=True, demandshock=True, supplyshock=False, inflationshock=False,
                flexiblerate=True, worldrate=3, inflationsensitivitytooutputgap=1, expendituresensitivitytointerestrate=0.75, CBcredibility=1,
@@ -51,7 +52,7 @@ class ModelMaker():
 
                elif self.shocksize < 0: 
                  #self.x = np.arange(self.df.iloc[5]['GDP'] - 1.5, self.ye - (0.5 * self.shocksize), 1)
-                 self.x = np.arange(self.df['GDP'].values.min() - 1.5, self.ye - (0.75 * self.shocksize), 25)
+                 self.x = np.arange(self.df['GDP'].values.min() - 1.5, self.ye - (0.75 * self.shocksize), 0.25)
                
 
 
@@ -216,7 +217,7 @@ class ModelMaker():
     qlist = []
     for i in self.x:
       q = (A - i - (a * r)) / (b * -1)
-      qlist.append(round(q, 2))
+      qlist.append(round(q, 4))
 
     if only:
       fig1 = go.Figure()
@@ -534,3 +535,285 @@ class ModelMaker():
     #print(fig1.layout)
     #fig1.show()
     st.plotly_chart(fig1)
+
+
+class CEModelMaker():
+  def __init__(self, df, shocksizepct=3, temporary=True, demandshock=True, supplyshock=False, inflationshock=False,
+               rstar = 3, inflationsensitivitytooutputgap=1, expendituresensitivitytointerestrate=0.75, CBcredibility=1,
+               domesticinflationtarget=2, CBbeta=1, equilibriumoutput=100):
+
+               self.df = df
+               self.shocksize = shocksizepct
+               self.temporary = temporary
+               self.multiplier = (0.01 * self.shocksize) + 1
+               self.demandshock = demandshock
+               self.supplyshock = supplyshock
+               self.inflationshock = inflationshock
+               self.rstar = rstar
+               self.alpha = inflationsensitivitytooutputgap
+               self.a = expendituresensitivitytointerestrate
+               self.CBcredibility = CBcredibility
+               #self.adb = np.log(expendituresensitivitytorealer)
+               self.piT = domesticinflationtarget
+               self.beta = CBbeta
+
+
+               self.ye = equilibriumoutput
+               self.A = self.df['A'].values[0]
+
+               if self.shocksize > 0:
+                 #self.x = np.arange(self.ye - (0.5 * self.shocksize), self.df.iloc[5]['GDP'] + 1.5, 1)
+                 self.x = np.arange(self.ye - (0.75 * self.shocksize), self.df['GDP'].values.max() + 1.5, 0.25)
+
+               elif self.shocksize < 0: 
+                 #self.x = np.arange(self.df.iloc[5]['GDP'] - 1.5, self.ye - (0.5 * self.shocksize), 1)
+                 self.x = np.arange(self.df['GDP'].values.min() - 1.5, self.ye - (0.75 * self.shocksize), 0.25)
+              
+               
+
+
+               self.cols = ['Periods', 'Output Gap', 'GDP', 'Inflation', 'Lending real i.r.', 'A']
+
+               if self.supplyshock:
+                 self.newye = self.ye * self.multiplier
+
+  def Modelpoints(self):
+    #this is finding the POIs from the actual model and outputting them for drawing
+    #A and Z represent initial and final equilibriums so p1, p25
+    #B represents the shock - it uses the period 5 data point because that isn't actually affected by period 5 rates
+    #C represents where the central bank aims to move the economy post shock (the optimals in the sim, period 6 values)
+    #using i-1 as the indexer to make the periods we're using clearer
+
+    ys = [self.df.iloc[(i-1)]['GDP'] for i in [1, 5, 6, 25]]
+    rs = [self.df.iloc[(i-1)]['Lending real i.r.'] for i in [1, 4, 5, 24]] # these need to be time bumped by one I think !!!!
+    #qs = [self.df.iloc[(i-1)]['q'] for i in [1, 5, 6, 25]] # I would think these would be time bumped too but i guess not? need to check
+    pis = [self.df.iloc[(i-1)]['Inflation'] for i in [1, 5, 6, 25]]
+
+    #I'm not gonna bother with the 'only' stuff I did for other plots - I think it would make debugging even less clear. Just gonna
+    #add to the graph drawing functions and pray it works
+    #the most likely bugs are time lags, which are pretty easy to fix in the code above so hope it all works lmao    
+    return ys, rs, pis
+
+
+  def ISCurve(self, period, only=True):
+    #y = A - a r
+    #use last period's r, any new A
+
+    periodslice = self.df.loc[self.df['Periods'] == period]
+    a = self.a
+    if period < 5:
+      r = self.rstar
+      A = self.A
+    else:
+      lastperiodslice = self.df.loc[self.df['Periods'] == (period-1)]
+      r = lastperiodslice['Lending real i.r.'].values[0]
+      A = periodslice['A'].values[0]
+
+    r = []
+    for i in self.x:
+      r.append(round((A - i) / a, 2))
+
+    if only:
+      fig1 = go.Figure()
+      fig1.add_trace(go.Scatter(
+          x=self.x, y=r, name='IS Curve', mode='lines', line={'color': 'blue'}
+      ))
+      fig1.update_layout(template='plotly_white', title=f'IS Curve - Period: {period}', height=700, width=700, showlegend=True)
+      fig1.update_xaxes(title_text='Output y', showline=True, linecolor='black', linewidth=1)
+      fig1.update_yaxes(title_text='Real lending rate r', showline=True, linecolor='black', linewidth=1)
+      fig1.add_vline(self.ye)
+      fig1.add_hline(self.rstar)
+      #fig1.show()
+      st.plotly_chart(fig1)
+    else:
+      return r
+
+  def MRCurve(self, only=True):
+    pi = []
+    for i in self.x:
+      pi.append(round(((self.ye - i) / (self.alpha * self.beta)) + self.piT, 2))
+
+    newpi=[]
+    if self.supplyshock and not self.temporary:
+      for i in self.x:
+        newpi.append(round(((self.newye - i) / (self.alpha * self.beta)) + self.piT, 2))
+
+    if only:
+      fig1 = go.Figure()
+      fig1.add_trace(go.Scatter(
+          x=self.x, y=pi, name='MR Curve', mode='lines', line={'color': 'orange'}
+      ))
+      if self.supplyshock and not self.temporary:
+        fig1.add_trace(go.Scatter(
+          x=self.x, y=newpi, name='New RX Curve', mode='lines', line={'color': 'tan'}
+          ))
+        fig1.add_vline(self.newye, line={'color': 'lightgrey'})
+      fig1.update_layout(template='plotly_white', title='MR Curve', height=700, width=700, showlegend=True)
+      fig1.update_xaxes(title_text='Output y', showline=True, linecolor='black', linewidth=1)
+      fig1.update_yaxes(title_text='Inflation pi', showline=True, linecolor='black', linewidth=1)
+      fig1.add_vline(self.ye)
+      fig1.add_hline(self.piT)
+      #fig1.show()
+      st.plotly_chart(fig1)
+    else:
+      return pi, newpi
+
+
+  def PhillipsCurve(self, period, only=True):
+    periodslice = self.df.loc[self.df['Periods'] == period]
+    piE = periodslice['Expected Inflation'].values[0]
+
+    pi = []
+    if self.supplyshock and not self.temporary and not period <= 5:
+      for i in self.x:
+        pi.append(round((piE + (self.alpha * (i - self.newye))), 2))
+    else:
+      for i in self.x:
+        pi.append(round((piE + (self.alpha * (i - self.ye))), 2))
+
+    if only:
+      fig1 = go.Figure()
+      fig1.add_trace(go.Scatter(
+          x=self.x, y=pi, name='Phillips Curve', mode='lines', line={'color': 'purple'}
+      ))
+      fig1.update_layout(template='plotly_white', title=f'Phillips Curve - Period: {period}', height=700, width=700, showlegend=True)
+      fig1.update_xaxes(title_text='Output y', showline=True, linecolor='black', linewidth=1)
+      fig1.update_yaxes(title_text='Inflation pi', showline=True, linecolor='black', linewidth=1)
+      fig1.add_vline(self.ye, line={'color': 'lightgrey'})
+      fig1.add_hline(self.piT, line={'color': 'lightgrey'})
+      if self.supplyshock and not self.temporary:
+        fig1.add_vline(self.newye, line={'color': 'lightgrey'})
+      #fig1.show()
+      st.plotly_chart(fig1)
+    else:
+      return pi
+
+  def MRPCDiagram(self, period):
+    PC = self.PhillipsCurve(period, only=False)
+    PCpointys, PCpointpis = self.PhillipsCurvePoints(only=False)
+    MR, NewMR = self.MRCurve(only=False)
+
+    fig1 = go.Figure()
+    fig1.add_trace(go.Scatter(x=PCpointys, y=PCpointpis, name='POIs', mode='markers',
+                               marker={'color': '#000000', 'size': 7, 'symbol': 'triangle-up'}))
+    fig1.add_trace(go.Scatter(
+          x=self.x, y=PC, name='Phillips Curve', mode='lines', line={'color': 'purple'}
+      ))
+    fig1.add_trace(go.Scatter(
+          x=self.x, y=MR, name='MR Curve', mode='lines', line={'color': 'orange'}
+      ))
+    if self.supplyshock and not self.temporary and period >= 5:
+        fig1.add_trace(go.Scatter(
+          x=self.x, y=NewMR, name='New MR Curve', mode='lines', line={'color': 'tan'}
+          ))
+        fig1.add_vline(self.newye, line={'color': 'lightgrey'})
+    fig1.update_layout(template='plotly_white', title=f'MR-PC Diagram - Period: {period}', height=700, width=700, showlegend=True)
+    fig1.update_xaxes(title_text='Output y', showline=True, linecolor='black', linewidth=1)
+    fig1.update_yaxes(title_text='Inflation pi', showline=True, linecolor='black', linewidth=1)
+    fig1.add_vline(self.ye)
+    fig1.add_hline(self.piT)
+    #fig1.show()
+    st.plotly_chart(fig1)  
+
+  def ThreeEquationsPeriod(self, period):
+    IS = self.ISCurve(period, only=False)
+    PC = self.PhillipsCurve(period, only=False)
+    MR, NewMR = self.MRCurve(only=False)
+    ys, ISrs, PCpointpis = self.Modelpoints()
+
+
+    fig1 = make_subplots(rows=2, cols=1, vertical_spacing=0.05, shared_xaxes=True,
+                         subplot_titles=['IS Diagram', 'AD-ERU Diagram', 'MR-PC Curve'])
+
+    fig1.add_trace(go.Scatter(
+          x=self.x, y=IS, name='IS Curve', mode='lines', line={'color': 'blue'}
+      ), row=1, col=1)
+    fig1.add_trace(go.Scatter(x=ys, y=ISrs, name='POIs', mode='markers', hovertext=['Point A', 'Point B', 'Point C', 'Point Z'], 
+                                 marker={'color': '#000000', 'size': 7, 'symbol': ['square', 'hexagon', 'triangle-up', 'square']}
+      ), row=1, col=1)
+    fig1.add_trace(go.Scatter(
+          x=self.x, y=PC, name='Phillips Curve', mode='lines', line={'color': 'purple'}
+      ), row=2, col=1)
+    fig1.add_trace(go.Scatter(
+          x=self.x, y=MR, name='MR Curve', mode='lines', line={'color': 'orange'}
+      ), row=2, col=1)
+    fig1.add_trace(go.Scatter(x=ys, y=PCpointpis, name='POIs', mode='markers', hovertext=['Point A', 'Point B', 'Point C', 'Point Z'], showlegend=False, 
+                               marker={'color': '#000000', 'size': 7, 'symbol': ['square', 'hexagon', 'triangle-up', 'square']}
+      ), row=2, col=1)
+
+    if self.supplyshock and not self.temporary and period >= 5:
+        fig1.add_trace(go.Scatter(
+          x=self.x, y=NewMR, name='New MR Curve', mode='lines', line={'color': 'tan'}
+          ), row=2, col=1)
+        fig1.add_vline(self.newye, row=2, line={'color': 'darkviolet'})
+    fig1.add_vline(self.ye, row=[1, 2], line={'color': 'lightgrey', 'dash': 'solid', 'width': 1})
+    fig1.add_hline(self.rstar, row=1, col=1, line={'color': 'lightgrey', 'dash': 'solid', 'width': 1})
+    fig1.add_hline(self.piT, row=2, col=1, line={'color': 'lightgrey', 'dash': 'solid', 'width': 1})
+    fig1.update_layout(template='plotly_white', title=f'Period: {period}', height=1000, width=500, margin={'l': 20, 'r': 20, 'b': 25, 't': 35},
+                       xaxis_showticklabels=True, xaxis2_showticklabels=True,
+                       yaxis_showticklabels=True, yaxis2_showticklabels=True,)
+    fig1.update_xaxes(showline=True, linecolor='darkgray', linewidth=1)
+    fig1.update_yaxes(title_text='Real Interest Rate r', showline=True, linecolor='darkgray', linewidth=1, row=1, col='all')
+    fig1.update_yaxes(title_text='Inflation pi', showline=True, linecolor='darkgray', linewidth=1, row=2, col='all')
+    fig1.update_yaxes(showline=True, linecolor='darkgray', linewidth=1)
+    #fig1.show()
+    st.plotly_chart(fig1)
+
+  def ThreeEquationsOverTime(self):
+    fig1 = make_subplots(rows=2, cols=4, vertical_spacing=0.05, horizontal_spacing=0.05, shared_xaxes=True, shared_yaxes=True,
+                         row_titles=['IS Diagram', 'MR-PC Curve'],
+                         column_titles=['Period1 / Point A', 'Period5 / Shock', 'Period6 / Recovery', 'Period25 / Point Z'])
+
+    MR, NewMR = self.MRCurve(only=False)
+    ys, ISrs, PCpointpis = self.Modelpoints()
+
+    fig1.add_trace(go.Scatter(x=ys, y=ISrs, name='POIs', mode='markers', hovertext=['Point A', 'Point B', 'Point C', 'Point Z'], 
+                                 marker={'color': '#000000', 'size': 7, 'symbol': ['square', 'hexagon', 'triangle-up', 'square']}
+      ), row=1, col=1)
+    fig1.add_trace(go.Scatter(x=ys, y=ISrs, name='POIs', mode='markers', hovertext=['Point A', 'Point B', 'Point C', 'Point Z'], 
+                                 marker={'color': '#000000', 'size': 7, 'symbol': ['square', 'hexagon', 'triangle-up', 'square']}, showlegend=False
+      ), row=1, col='all')
+    fig1.add_trace(go.Scatter(x=ys, y=PCpointpis, name='POIs', mode='markers', hovertext=['Point A', 'Point B', 'Point C', 'Point Z'], 
+                               marker={'color': '#000000', 'size': 7, 'symbol': ['square', 'hexagon', 'triangle-up', 'square']}, showlegend=False
+      ), row=2, col='all')
+
+    periods = [1, 5, 6, 25]
+    for period in periods:
+      IS = self.ISCurve(period, only=False)
+      PC = self.PhillipsCurve(period, only=False)
+      onlegend = False if period !=5 else True
+      column = periods.index(period) + 1
+
+      fig1.add_trace(go.Scatter(
+          x=self.x, y=IS, name='IS Curve', mode='lines', line={'color': 'blue'}, showlegend=onlegend 
+      ), row=1, col=column)
+
+      fig1.add_trace(go.Scatter(
+          x=self.x, y=PC, name='Phillips Curve', mode='lines', line={'color': 'purple'}, showlegend=onlegend
+      ), row=2, col=column)
+      fig1.add_trace(go.Scatter(
+          x=self.x, y=MR, name='MR Curve', mode='lines', line={'color': 'orange'}, showlegend=onlegend
+      ), row=2, col=column)
+
+      if self.supplyshock and not self.temporary and period >= 5:
+        fig1.add_trace(go.Scatter(
+          x=self.x, y=NewMR, name='New MR Curve', mode='lines', line={'color': 'tan'}, showlegend=onlegend
+          ), row=2, col=column)
+
+
+    fig1.add_vline(self.ye, row=[1, 2], col='all', line={'color': 'lightgrey', 'dash': 'solid', 'width': 1})
+    fig1.add_hline(self.rstar, row=1, col='all', line={'color': 'lightgrey', 'dash': 'solid', 'width': 1})
+    fig1.add_hline(self.piT, row=2, col='all', line={'color': 'lightgrey', 'dash': 'solid', 'width': 1})
+    fig1.update_layout(template='plotly_white', height=450, width=800, margin={'l': 20, 'r': 20, 'b': 25, 't': 35},
+                       xaxis_showticklabels=True, xaxis2_showticklabels=True, xaxis3_showticklabels=True, xaxis4_showticklabels=True,
+                       xaxis5_showticklabels=True, xaxis6_showticklabels=True, xaxis7_showticklabels=True, xaxis8_showticklabels=True,
+                       yaxis_showticklabels=True, yaxis2_showticklabels=True, yaxis3_showticklabels=True, yaxis4_showticklabels=True,
+                       yaxis5_showticklabels=True, yaxis6_showticklabels=True, yaxis7_showticklabels=True, yaxis8_showticklabels=True,
+                       )
+    fig1.update_xaxes(showline=True, linecolor='darkgray', linewidth=1)
+    fig1.update_yaxes(title_text='Real Interest Rate r', showline=True, linecolor='darkgray', linewidth=1, row=1, col='all')
+    fig1.update_yaxes(title_text='Inflation pi', showline=True, linecolor='darkgray', linewidth=1, row=2, col='all')
+    fig1.update_yaxes(showline=True, linecolor='darkgray', linewidth=1)
+    #print(fig1.layout)
+    #fig1.show()
+    st.plotly_chart(fig1)  
