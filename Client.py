@@ -23,7 +23,7 @@ st.text('')
 st.text('Version: BETA 1.0      neil.majithia@live.co.uk')
 st.write('https://github.com/NevadaM/3EquationModelMaker')
 st.text('')
-st.write('''Welcome to the alpha3 version of the three equation model maker. 
+st.write('''Welcome to the Beta1 version of the three equation model maker. 
 See the GitHub page for info. Planned updates can be viewed in the github readme. If you have 
 any issues, get in touch on the github issues tab, or via the email address above.''')
 
@@ -33,7 +33,9 @@ with st.sidebar.form('Options'):
     submitted = st.form_submit_button('Click here to Simulate')
     econinput = st.radio('Type of Economy: ', ['Closed Economy', 'Open Economy with Flexible ER'])
     tempinput = st.radio('Shock Duration: ', ['Temporary', 'Permanent'])
-    sizeinput = st.number_input('Shock Size %: ', min_value=-20, max_value=20, value=0)
+    sizeinput = st.number_input('Shock Size %: ', min_value=-20, max_value=20, value=3)
+    if sizeinput == 0:
+        st.error("Shock Size can't be 0")
     typeinput = st.radio('Shock Type: ', ['Supply', 'Demand', 'Inflationary'])
     credinput = st.number_input('Credibility of Central Bank', min_value=0.0, max_value=1.0, value=0.0, step=0.1)
     rstarinput = st.number_input('World Real Interest Rate (r*) %: ', min_value=0.0, value=3.0)
@@ -53,7 +55,10 @@ if 'submitted' not in st.session_state:
 if submitted:
     st.session_state.submitted = True
 
-if st.session_state.submitted:
+if sizeinput == 0:
+    st.error("Shock Size can't be 0 - please change it in the sidebar")
+
+elif st.session_state.submitted:
     if tempinput == 'Temporary':
         temporary = True
     else:

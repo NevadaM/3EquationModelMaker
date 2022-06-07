@@ -32,6 +32,10 @@ Early rounding in the function, I kept the rounding but only to 4 places, gives 
 
 Got rid of some unused parameters. Marginal improvement on memory use. I think I should target processing more - some conditions especially within the client could be cleaned. Working on the django site gives me a good chance to do it, esp with the use of requests. 
 
+* Hotfix Beta 1.1
+
+Added validation logic for when shock size = 0, and changed default shock size to 3
+
 ## Description
 The aim of this program is to plot the exact state of the macroeconomy at any time period in a simulated shock.
 It's a reconstruction of the Carlin & Soskice macroeconomic simulator (the excel simulator in the folder), built on their work on the 3 equation model.
