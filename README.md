@@ -1,6 +1,6 @@
 # The 3 Equation Model Maker
 Welcome to the 3 Equation Model Maker, by Neil Majithia
-The app is hosted here: https://share.streamlit.io/nevadam/3equationmodelmaker/main/Client.py 
+The app is hosted here: https://nevadam-3equationmodelmaker-client-qe3nx0.streamlitapp.com/ 
 
 ## Version: **Beta 1**
 
